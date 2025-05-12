@@ -1,3 +1,5 @@
+conf.yaml中配置deepseek-chat
+
 cmd
 
 bootstrap.bat -d
