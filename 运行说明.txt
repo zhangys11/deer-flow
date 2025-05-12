@@ -1,0 +1,7 @@
+cmd
+
+bootstrap.bat -d
+
+http://localhost:3000/chat 开启对话
+
+Config > MCP > add servers 添加MCP服务

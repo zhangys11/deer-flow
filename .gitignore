@@ -21,3 +21,5 @@ conf.yaml
 .idea/
 .langgraph_api/
 
+node_modules
+uv.lock

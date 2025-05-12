@@ -92,6 +92,10 @@ cp conf.yaml.example conf.yaml
 # Install marp for ppt generation
 # https://github.com/marp-team/marp-cli?tab=readme-ov-file#use-package-manager
 brew install marp-cli
+or
+scoop install marp
+or
+npm install -g @marp-team/marp-cli
 ```
 
 Optionally, install web UI dependencies via [pnpm](https://pnpm.io/installation):
