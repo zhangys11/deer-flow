@@ -5,6 +5,10 @@
 Entry point script for the DeerFlow project.
 """
 
+# import getpass
+# import os
+# os.environ["TAVILY_API_KEY"] = getpass.getpass()
+
 import argparse
 import asyncio
 
