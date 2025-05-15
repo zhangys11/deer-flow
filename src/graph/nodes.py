@@ -28,7 +28,7 @@ from src.prompts.template import apply_prompt_template
 from src.utils.json_utils import repair_json_output
 
 from .types import State
-from ..config import SEARCH_MAX_RESULTS
+from ..config import SEARCH_MAX_RESULTS, SELECTED_SEARCH_ENGINE, SearchEngine
 
 logger = logging.getLogger(__name__)
 
@@ -45,19 +45,24 @@ def handoff_to_planner(
 
 
 def background_investigation_node(state: State) -> Command[Literal["planner"]]:
-
     logger.info("background investigation node is running.")
-    searched_content = LoggedTavilySearch(max_results=SEARCH_MAX_RESULTS).invoke(
-        {"query": state["messages"][-1].content}
-    )
-    background_investigation_results = None
-    if isinstance(searched_content, list):
-        background_investigation_results = [
-            {"title": elem["title"], "content": elem["content"]}
-            for elem in searched_content
-        ]
+    query = state["messages"][-1].content
+    if SELECTED_SEARCH_ENGINE == SearchEngine.TAVILY:
+        searched_content = LoggedTavilySearch(max_results=SEARCH_MAX_RESULTS).invoke(
+            {"query": query}
+        )
+        background_investigation_results = None
+        if isinstance(searched_content, list):
+            background_investigation_results = [
+                {"title": elem["title"], "content": elem["content"]}
+                for elem in searched_content
+            ]
+        else:
+            logger.error(
+                f"Tavily search returned malformed response: {searched_content}"
+            )
     else:
-        logger.error(f"Tavily search returned malformed response: {searched_content}")
+        background_investigation_results = web_search_tool.invoke(query)
     return Command(
         update={
             "background_investigation_results": json.dumps(
@@ -303,17 +308,34 @@ async def _execute_agent_step(
     observations = state.get("observations", [])
 
     # Find the first unexecuted step
+    current_step = None
+    completed_steps = []
     for step in current_plan.steps:
         if not step.execution_res:
+            current_step = step
             break
+        else:
+            completed_steps.append(step)
 
-    logger.info(f"Executing step: {step.title}")
+    if not current_step:
+        logger.warning("No unexecuted step found")
+        return Command(goto="research_team")
 
-    # Prepare the input for the agent
+    logger.info(f"Executing step: {current_step.title}")
+
+    # Format completed steps information
+    completed_steps_info = ""
+    if completed_steps:
+        completed_steps_info = "# Existing Research Findings\n\n"
+        for i, step in enumerate(completed_steps):
+            completed_steps_info += f"## Existing Finding {i+1}: {step.title}\n\n"
+            completed_steps_info += f"<finding>\n{step.execution_res}\n</finding>\n\n"
+
+    # Prepare the input for the agent with completed steps info
     agent_input = {
         "messages": [
             HumanMessage(
-                content=f"#Task\n\n##title\n\n{step.title}\n\n##description\n\n{step.description}\n\n##locale\n\n{state.get('locale', 'en-US')}"
+                content=f"{completed_steps_info}# Current Task\n\n## Title\n\n{current_step.title}\n\n## Description\n\n{current_step.description}\n\n## Locale\n\n{state.get('locale', 'en-US')}"
             )
         ]
     }
@@ -335,8 +357,8 @@ async def _execute_agent_step(
     logger.debug(f"{agent_name.capitalize()} full response: {response_content}")
 
     # Update the step with the execution result
-    step.execution_res = response_content
-    logger.info(f"Step '{step.title}' execution completed by {agent_name}")
+    current_step.execution_res = response_content
+    logger.info(f"Step '{current_step.title}' execution completed by {agent_name}")
 
     return Command(
         update={

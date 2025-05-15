@@ -18,6 +18,16 @@ import { cn } from "~/lib/utils";
 
 import Image from "./image";
 import { Tooltip } from "./tooltip";
+import { Link } from "./link";
+
+const components: ReactMarkdownOptions["components"] = {
+  a: ({ href, children }) => <Link href={href}>{children}</Link>,
+  img: ({ src, alt }) => (
+    <a href={src as string} target="_blank" rel="noopener noreferrer">
+      <Image className="rounded" src={src as string} alt={alt ?? ""} />
+    </a>
+  ),
+};
 
 export function Markdown({
   className,
@@ -39,28 +49,11 @@ export function Markdown({
     return [rehypeKatex];
   }, [animated]);
   return (
-    <div
-      className={cn(
-        className,
-        "prose dark:prose-invert prose-p:my-0 prose-img:mt-0 flex flex-col gap-4",
-      )}
-      style={style}
-    >
+    <div className={cn(className, "prose dark:prose-invert")} style={style}>
       <ReactMarkdown
         remarkPlugins={[remarkGfm, remarkMath]}
         rehypePlugins={rehypePlugins}
-        components={{
-          a: ({ href, children }) => (
-            <a href={href} target="_blank" rel="noopener noreferrer">
-              {children}
-            </a>
-          ),
-          img: ({ src, alt }) => (
-            <a href={src as string} target="_blank" rel="noopener noreferrer">
-              <Image className="rounded" src={src as string} alt={alt ?? ""} />
-            </a>
-          ),
-        }}
+        components={components}
         {...props}
       >
         {autoFixMarkdown(
