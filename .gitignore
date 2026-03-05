@@ -45,6 +45,10 @@ log/
 # pnpm
 .pnpm-store
 sandbox_image_cache.tar
+node_modules
 
 # ignore the legacy `web` folder
 web/
+
+# uv
+uv.lock
