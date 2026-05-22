@@ -1,0 +1,52 @@
+{
+  "skill_name": "doc-to-markdown",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "Convert the PDF file to markdown",
+      "expected_output": "A markdown file with text extracted from the PDF",
+      "files": ["evals/files/sample.pdf"],
+      "expectations": [
+        "The output is a .md file",
+        "The output contains page-based structure with ## Page headers or similar section markers",
+        "Text content from the PDF is preserved in the markdown",
+        "The output mentions which engine was used for conversion"
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "Convert this DOCX file to markdown format",
+      "expected_output": "A markdown file with content extracted from the Word document",
+      "files": ["evals/files/sample.docx"],
+      "expectations": [
+        "The output is a .md file",
+        "Headings from the DOCX are preserved as markdown headings",
+        "Lists in the DOCX are preserved in the markdown",
+        "The output file contains the converted content"
+      ]
+    },
+    {
+      "id": 3,
+      "prompt": "Convert this PPTX file to markdown",
+      "expected_output": "A markdown file with content extracted from the PowerPoint presentation",
+      "files": ["evals/files/sample.pptx"],
+      "expectations": [
+        "The output is a .md file",
+        "The output contains slide-based structure with ## Slide headers",
+        "Text content from the PPTX slides is preserved in the markdown",
+        "Tables from the PPTX are converted to markdown tables"
+      ]
+    },
+    {
+      "id": 4,
+      "prompt": "Convert the image file to markdown using OCR",
+      "expected_output": "A markdown file with text extracted from the image via OCR",
+      "files": ["evals/files/sample_image.png"],
+      "expectations": [
+        "The output is a .md file",
+        "Text is extracted from the image using OCR",
+        "The output mentions using pytesseract as the engine"
+      ]
+    }
+  ]
+}

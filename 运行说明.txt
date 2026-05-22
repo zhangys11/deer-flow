@@ -1,0 +1,44 @@
+# 使用chocolatay安装make工具
+choco install make 
+
+# 安装ollama本地模型依赖
+cd backend
+uv pip install langchain_ollama
+
+> $env:OLLAMA_HOST="0.0.0.0:11434"
+> ollama serve # bind ollama to all hosts and run
+
+# Use vllm. Titan Pascal needs CUDA 11.8, which requires python < 3.13. Set up a conda env.
+Use Linux or WSL.
+> conda create -n py310 python=3.10
+> conda activate py310
+> $env:UV_DEFAULT_INDEX="https://pypi.tuna.tsinghua.edu.cn/simple"
+> uv pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu118 --system
+> uv pip install vllm --system --torch-backend=auto
+> $export VLLM_USE_MODELSCOPE=True
+
+Or use docker (require a SM 7.1 GPU)
+> docker run --gpus all --env VLLM_USE_MODELSCOPE=True -p 8000:8000 vllm/llm-openai:latest --model Qwen/Qwen3-8B --gpu-memory-utilization 0.8 
+# 4B is 2.5G, 8B is 5.2G, 14B is 9.3G
+
+# 安装marp，用于生成ppt
+npm install -g @marp-team/marp-cli
+
+Go to deer-flow folder, revise config.yml and add API tokens.
+Go to frontend, revise .env.
+
+make docker-init
+make docker-start
+
+In Docker Destop GUI, enter the terminal of deer-flow-gateway, run:
+pip install langchain chromadb sentence-transformers unstructured pypdf python-docx fastapi uvicorn
+
+
+go to http://localhost:2026
+
+用户名 oo@zju.edu.cn 
+密码 deerflow1234
+
+deer-flow使用skill架构来扩展功能，e.g.,
+
+写一个把上传的各种类型文档（pdf/word/ppt/jpg/...）转换为md的skill，并在当前环境启用。
